@@ -220,8 +220,5 @@ MIT License - feel free to use for personal or commercial projects!
 
 ## Support
 
-Having issues? [Open an issue](https://github.com/yourusername/linkedin-post-generator/issues)
+Having issues? [Open an issue](https://github.com/yourusername/linkedin-post-generator/issues) , Inspired by [linkedin-post-automator](https://github.com/CRAKZOR/linkedin-post-automator)
 
----
-
-Inspired by [linkedin-post-automator](https://github.com/CRAKZOR/linkedin-post-automator)
