@@ -1,5 +1,6 @@
 """
 LinkedIn Post Generator - Main Application
+Uses three fixed blog sources: Fullstack, Expo, and AWS DevOps
 """
 import csv
 import json
@@ -9,8 +10,7 @@ from pathlib import Path
 from typing import List, Dict
 
 from config import Config
-from url_loader import URLLoader
-from crawler import WebCrawler
+from crawlers import FullstackCrawler, ExpoCrawler, AWSCrawler
 from post_generator import PostGenerator
 
 
@@ -21,37 +21,46 @@ class LinkedInPostApp:
         self.config = Config()
         self.config.validate()
         
-        self.crawler = WebCrawler()
+        self.fullstack = FullstackCrawler()
+        self.expo = ExpoCrawler()
+        self.aws = AWSCrawler()
         self.generator = PostGenerator(self.config.openai_api_key)
     
-    def run(self, urls_file: str = 'urls.txt'):
-        """
-        Run the complete workflow
-        
-        Args:
-            urls_file: Path to file containing URLs (txt or json)
-        """
-        # Load URLs
+    def run(self):
+        """Run the complete workflow"""
         print("=" * 70)
         print("LinkedIn Post Generator")
         print("=" * 70)
+        print("\nCrawling three fixed blog sources:")
+        print("  • Fullstack Labs Blog")
+        print("  • Expo Blog")
+        print("  • AWS DevOps Blog")
         
-        try:
-            urls = URLLoader.load(urls_file)
-            print(f"\n✓ Loaded {len(urls)} URLs from {urls_file}")
-        except FileNotFoundError:
-            print(f"\n❌ Error: {urls_file} not found")
-            print("\nCreate one of these files:")
-            print("  • urls.txt - One URL per line")
-            print("  • urls.json - JSON array of URLs")
+        # Crawl all three blogs
+        all_articles = []
+        
+        # Crawl Fullstack
+        fullstack_articles = self.fullstack.crawl()
+        all_articles.extend(fullstack_articles)
+        
+        # Crawl Expo
+        expo_articles = self.expo.crawl()
+        all_articles.extend(expo_articles)
+        
+        # Crawl AWS
+        aws_articles = self.aws.crawl()
+        all_articles.extend(aws_articles)
+        
+        print(f"\n{'=' * 70}")
+        print(f"Total articles found: {len(all_articles)}")
+        print('=' * 70)
+        
+        if not all_articles:
+            print("\n❌ No articles found from any blog")
             return
         
-        if not urls:
-            print("❌ No URLs found in file")
-            return
-        
-        # Process URLs
-        results = self.process_urls(urls)
+        # Generate posts for all articles
+        results = self.generate_posts(all_articles)
         
         if results:
             # Save results
@@ -60,61 +69,66 @@ class LinkedInPostApp:
             print(f"\n{'=' * 70}")
             print(f"✅ COMPLETED! Generated {len(results)} LinkedIn posts")
             print('=' * 70)
+            print(f"\nBreakdown by source:")
+            
+            # Count by source
+            sources = {}
+            for result in results:
+                source = result.get('source', 'Unknown')
+                sources[source] = sources.get(source, 0) + 1
+            
+            for source, count in sources.items():
+                print(f"  • {source}: {count} posts")
+            
             print(f"\nFiles created:")
             print(f"  📄 {self.config.output_file}")
             print(f"  📄 {self.config.output_file.replace('.csv', '.json')}")
         else:
             print("\n❌ No posts generated")
     
-    def process_urls(self, urls: List[str]) -> List[Dict]:
-        """Process all URLs and generate posts"""
-        all_results = []
+    def generate_posts(self, articles: List[Dict]) -> List[Dict]:
+        """Generate LinkedIn posts for all articles"""
+        results = []
         
-        for url in urls:
-            print(f"\n{'=' * 70}")
-            print(f"Processing: {url}")
-            print('=' * 70)
-            
-            # Crawl for articles
-            articles = self.crawler.crawl_blog_page(
-                url, 
-                max_articles=self.config.max_articles_per_url
-            )
-            
-            if not articles:
-                print("⚠ No articles found, skipping...")
-                continue
-            
-            # Generate posts for each article
-            for i, article in enumerate(articles, 1):
-                print(f"\n[{i}/{len(articles)}] {article['title'][:60]}...")
-                
-                # Optionally extract content
-                content = ""
-                if self.config.extract_content:
-                    print("  → Extracting content...")
-                    content = self.crawler.extract_content(article['url'])
-                
-                # Generate post
-                print("  → Generating post...")
-                post = self.generator.generate(article, content)
-                
-                # Store result
-                result = {
-                    'source_url': url,
-                    'article_url': article['url'],
-                    'article_title': article['title'],
-                    'linkedin_post': post,
-                    'generated_at': datetime.now().isoformat()
-                }
-                
-                all_results.append(result)
-                print(f"  ✓ Done ({len(post)} chars)")
-                
-                # Rate limiting
-                time.sleep(1)
+        print(f"\n{'=' * 70}")
+        print(f"Generating LinkedIn Posts")
+        print('=' * 70)
         
-        return all_results
+        for i, article in enumerate(articles, 1):
+            print(f"\n[{i}/{len(articles)}] {article['source']}: {article['title'][:50]}...")
+            
+            # Optionally extract content
+            content = ""
+            if self.config.extract_content:
+                print("  → Extracting content...")
+                # Use the appropriate crawler based on source
+                if article['source'] == 'Fullstack':
+                    content = self.fullstack.extract_content(article['url'])
+                elif article['source'] == 'Expo':
+                    content = self.expo.extract_content(article['url'])
+                elif article['source'] == 'AWS DevOps':
+                    content = self.aws.extract_content(article['url'])
+            
+            # Generate post
+            print("  → Generating post...")
+            post = self.generator.generate(article, content)
+            
+            # Store result
+            result = {
+                'source': article['source'],
+                'article_url': article['url'],
+                'article_title': article['title'],
+                'linkedin_post': post,
+                'generated_at': datetime.now().isoformat()
+            }
+            
+            results.append(result)
+            print(f"  ✓ Done ({len(post)} chars)")
+            
+            # Rate limiting to avoid API throttling
+            time.sleep(1)
+        
+        return results
     
     def save_results(self, results: List[Dict]):
         """Save results to CSV and JSON files"""
@@ -143,13 +157,7 @@ class LinkedInPostApp:
 def main():
     """Entry point"""
     app = LinkedInPostApp()
-    
-    # Check for urls file
-    urls_file = 'urls.txt'
-    if Path('urls.json').exists():
-        urls_file = 'urls.json'
-    
-    app.run(urls_file)
+    app.run()
 
 
 if __name__ == "__main__":
