@@ -60,9 +60,9 @@ class LinkedInPostApp:
         self.log("\n" + "=" * 70)
         self.log("Crawling React Native Blog")
         self.log("=" * 70)
-        reactnative_articles = self.reactnative.crawl()
-        all_articles.extend(reactnative_articles)
-        self.log(f"✓ Found {len(reactnative_articles)} articles from React Native")
+        expo_articles = self.expo.crawl()
+        all_articles.extend(expo_articles)
+        self.log(f"✓ Found {len(expo_articles)} articles from React Native")
         
         # Crawl AWS
         self.log("\n" + "=" * 70)
@@ -138,8 +138,8 @@ class LinkedInPostApp:
                 # Use the appropriate crawler based on source
                 if article['source'] == 'Fullstack':
                     content = self.fullstack.extract_content(article['url'])
-                elif article['source'] == 'React Native':
-                    content = self.reactnative.extract_content(article['url'])
+                elif article['source'] == 'Expo':
+                    content = self.expo.extract_content(article['url'])
                 elif article['source'] == 'AWS DevOps':
                     content = self.aws.extract_content(article['url'])
             
