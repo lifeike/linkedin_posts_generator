@@ -7,7 +7,6 @@ Automatically crawl three tech blogs and generate professional LinkedIn posts us
 ✨ **Three Fixed Blog Sources** - Crawls Fullstack Labs, React Native, and AWS DevOps blogs  
 🤖 **AI-Powered Posts** - Generate engaging LinkedIn posts using OpenAI GPT-3.5  
 📡 **RSS Feed Support** - Stable extraction using RSS feeds where available  
-💾 **Multiple Formats** - Export to CSV and JSON  
 🔒 **Secure** - API keys stored in `.env` file (not committed to git)
 
 ## Blog Sources
@@ -225,4 +224,4 @@ Having issues? [Open an issue](https://github.com/yourusername/linkedin-post-gen
 
 ---
 
-Made with ❤️ using Python and OpenAI
+Inspired by [linkedin-post-automator](https://github.com/CRAKZOR/linkedin-post-automator)
