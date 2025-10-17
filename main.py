@@ -24,52 +24,81 @@ class LinkedInPostApp:
         self.fullstack = FullstackCrawler()
         self.expo = ExpoCrawler()
         self.aws = AWSCrawler()
-        self.generator = PostGenerator(self.config.openai_api_key)
+        self.generator = PostGenerator(self.config.openai_api_key, self.config.custom_hashtags)
+        self.log_messages = []  # Store log messages for meta.txt
+    
+    def log(self, message: str):
+        """Log message to both console and meta file"""
+        print(message)
+        self.log_messages.append(message)
     
     def run(self):
         """Run the complete workflow"""
-        print("=" * 70)
-        print("LinkedIn Post Generator")
-        print("=" * 70)
-        print("\nCrawling three fixed blog sources:")
-        print("  • Fullstack Labs Blog")
-        print("  • Expo Blog")
-        print("  • AWS DevOps Blog")
+        start_time = datetime.now()
+        
+        self.log("=" * 70)
+        self.log("LinkedIn Post Generator")
+        self.log("=" * 70)
+        self.log(f"Started at: {start_time.strftime('%Y-%m-%d %H:%M:%S')}")
+        self.log("\nCrawling three fixed blog sources:")
+        self.log("  • Fullstack Labs Blog")
+        self.log("  • React Native Blog")
+        self.log("  • AWS DevOps Blog")
         
         # Crawl all three blogs
         all_articles = []
         
         # Crawl Fullstack
+        self.log("\n" + "=" * 70)
+        self.log("Crawling Fullstack Blog")
+        self.log("=" * 70)
         fullstack_articles = self.fullstack.crawl()
         all_articles.extend(fullstack_articles)
+        self.log(f"✓ Found {len(fullstack_articles)} articles from Fullstack")
         
-        # Crawl Expo
-        expo_articles = self.expo.crawl()
-        all_articles.extend(expo_articles)
+        # Crawl React Native
+        self.log("\n" + "=" * 70)
+        self.log("Crawling React Native Blog")
+        self.log("=" * 70)
+        reactnative_articles = self.reactnative.crawl()
+        all_articles.extend(reactnative_articles)
+        self.log(f"✓ Found {len(reactnative_articles)} articles from React Native")
         
         # Crawl AWS
+        self.log("\n" + "=" * 70)
+        self.log("Crawling AWS DevOps Blog")
+        self.log("=" * 70)
         aws_articles = self.aws.crawl()
         all_articles.extend(aws_articles)
+        self.log(f"✓ Found {len(aws_articles)} articles from AWS DevOps")
         
-        print(f"\n{'=' * 70}")
-        print(f"Total articles found: {len(all_articles)}")
-        print('=' * 70)
+        self.log(f"\n{'=' * 70}")
+        self.log(f"Total articles found: {len(all_articles)}")
+        self.log('=' * 70)
         
         if not all_articles:
-            print("\n❌ No articles found from any blog")
+            self.log("\n❌ No articles found from any blog")
+            self.save_meta()
             return
         
         # Generate posts for all articles
+        self.log(f"\n{'=' * 70}")
+        self.log(f"Generating LinkedIn Posts")
+        self.log('=' * 70)
+        
         results = self.generate_posts(all_articles)
         
         if results:
             # Save results
             self.save_results(results)
             
-            print(f"\n{'=' * 70}")
-            print(f"✅ COMPLETED! Generated {len(results)} LinkedIn posts")
-            print('=' * 70)
-            print(f"\nBreakdown by source:")
+            end_time = datetime.now()
+            duration = (end_time - start_time).total_seconds()
+            
+            self.log(f"\n{'=' * 70}")
+            self.log(f"✅ COMPLETED! Generated {len(results)} LinkedIn posts")
+            self.log('=' * 70)
+            self.log(f"\nBreakdown by source:")
             
             # Count by source
             sources = {}
@@ -78,13 +107,18 @@ class LinkedInPostApp:
                 sources[source] = sources.get(source, 0) + 1
             
             for source, count in sources.items():
-                print(f"  • {source}: {count} posts")
+                self.log(f"  • {source}: {count} posts")
             
-            print(f"\nFiles created:")
-            print(f"  📄 {self.config.output_file}")
-            print(f"  📄 {self.config.output_file.replace('.csv', '.json')}")
+            self.log(f"\nFiles created:")
+            self.log(f"  📄 {self.config.output_file}")
+            self.log(f"  📄 output/meta.txt")
+            self.log(f"\nCompleted at: {end_time.strftime('%Y-%m-%d %H:%M:%S')}")
+            self.log(f"Total duration: {duration:.1f} seconds")
         else:
-            print("\n❌ No posts generated")
+            self.log("\n❌ No posts generated")
+        
+        # Save meta file
+        self.save_meta()
     
     def generate_posts(self, articles: List[Dict]) -> List[Dict]:
         """Generate LinkedIn posts for all articles"""
@@ -104,8 +138,8 @@ class LinkedInPostApp:
                 # Use the appropriate crawler based on source
                 if article['source'] == 'Fullstack':
                     content = self.fullstack.extract_content(article['url'])
-                elif article['source'] == 'Expo':
-                    content = self.expo.extract_content(article['url'])
+                elif article['source'] == 'React Native':
+                    content = self.reactnative.extract_content(article['url'])
                 elif article['source'] == 'AWS DevOps':
                     content = self.aws.extract_content(article['url'])
             
@@ -131,27 +165,42 @@ class LinkedInPostApp:
         return results
     
     def save_results(self, results: List[Dict]):
-        """Save results to CSV and JSON files"""
+        """Save results to TXT file with easy copy-paste format"""
         output_file = self.config.output_file
         
         # Create output directory if it doesn't exist
         output_path = Path(output_file)
         output_path.parent.mkdir(parents=True, exist_ok=True)
         
-        # Save as CSV
-        with open(output_file, 'w', newline='', encoding='utf-8') as f:
-            writer = csv.DictWriter(f, fieldnames=results[0].keys())
-            writer.writeheader()
-            writer.writerows(results)
+        # Save as TXT with clear separation
+        with open(output_file, 'w', encoding='utf-8') as f:
+            for i, result in enumerate(results, 1):
+                f.write(f"{'=' * 70}\n")
+                f.write(f"POST #{i}\n")
+                f.write(f"{'=' * 70}\n")
+                f.write(f"Source: {result['source']}\n")
+                f.write(f"Title: {result['article_title']}\n")
+                f.write(f"URL: {result['article_url']}\n")
+                f.write(f"Generated: {result['generated_at']}\n")
+                f.write(f"\n{'- ' * 35}\n")
+                f.write(f"LINKEDIN POST:\n")
+                f.write(f"{'- ' * 35}\n\n")
+                f.write(result['linkedin_post'])
+                f.write(f"\n\n")
         
-        print(f"\n✓ Saved {len(results)} posts to {output_file}")
+        self.log(f"\n✓ Saved {len(results)} posts to {output_file}")
+    
+    def save_meta(self):
+        """Save meta information (log messages) to meta.txt"""
+        meta_file = "output/meta.txt"
         
-        # Save as JSON
-        json_file = output_file.replace('.csv', '.json')
-        with open(json_file, 'w', encoding='utf-8') as f:
-            json.dump(results, f, indent=2, ensure_ascii=False)
+        # Create output directory if it doesn't exist
+        Path("output").mkdir(parents=True, exist_ok=True)
         
-        print(f"✓ Saved {len(results)} posts to {json_file}")
+        with open(meta_file, 'w', encoding='utf-8') as f:
+            f.write('\n'.join(self.log_messages))
+        
+        print(f"✓ Saved execution log to {meta_file}")
 
 
 def main():

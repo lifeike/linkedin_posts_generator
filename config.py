@@ -41,8 +41,14 @@ class Config:
     
     @property
     def output_file(self) -> str:
-        """Output CSV filename"""
-        return os.getenv('OUTPUT_FILE', 'linkedin_posts.csv')
+        """Output TXT filename"""
+        return os.getenv('OUTPUT_FILE', 'output/linkedin_posts.txt')
+    
+    @property
+    def custom_hashtags(self) -> str:
+        """Custom hashtags to append to posts"""
+        default_tags = '#SoftwareEngineer #Developer #FullStackDeveloper #AWS #ReactNative #CloudComputing #MobileDev'
+        return os.getenv('CUSTOM_HASHTAGS', default_tags)
     
     def validate(self):
         """Validate required configuration"""
