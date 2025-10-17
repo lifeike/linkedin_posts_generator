@@ -32,7 +32,7 @@ class Config:
     @property
     def max_articles_per_url(self) -> int:
         """Maximum articles to process per URL"""
-        return int(os.getenv('MAX_ARTICLES_PER_URL', '30'))
+        return int(os.getenv('MAX_ARTICLES_PER_URL', '10'))
     
     @property
     def extract_content(self) -> bool:
