@@ -1,3 +1,3 @@
 https://www.docker.com/blog/
-https://aws.amazon.com/blogs/aws/
-https://www.lastweekinaws.com/blog/
+https://www.fullstack.com/labs/resources/blog
+https://aws.amazon.com/blogs/devops/

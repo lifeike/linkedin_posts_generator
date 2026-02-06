@@ -1,17 +1,15 @@
 """
-Expo Blog Crawler - Extract articles from React Native blog via RSS
+Docker Blog Crawler - Extract articles from Docker blog
 """
 import requests
 from bs4 import BeautifulSoup
 from typing import List, Dict
-import xml.etree.ElementTree as ET
 
 
-class ExpoCrawler:
-    """Crawl React Native blog via RSS feed"""
+class DockerCrawler:
+    """Crawl Docker blog and extract article information"""
     
-    URL = "https://reactnative.dev/blog"
-    RSS_URL = "https://reactnative.dev/blog/rss.xml"
+    URL = "https://www.docker.com/blog/"
     
     def __init__(self):
         self.headers = {
@@ -20,53 +18,58 @@ class ExpoCrawler:
     
     def crawl(self) -> List[Dict]:
         """
-        Crawl React Native blog via RSS feed
+        Crawl Docker blog and extract all articles
         
         Returns:
             List of dicts with 'url', 'title', and 'source' keys
         """
         print(f"\n{'=' * 70}")
-        print(f"Crawling React Native Blog")
+        print(f"Crawling Docker Blog")
         print('=' * 70)
-        print(f"RSS Feed: {self.RSS_URL}")
+        print(f"URL: {self.URL}")
         
         try:
-            response = requests.get(self.RSS_URL, headers=self.headers, timeout=15)
+            response = requests.get(self.URL, headers=self.headers, timeout=15)
             response.raise_for_status()
             
+            soup = BeautifulSoup(response.content, 'html.parser')
             articles = []
             
-            # Parse RSS XML
-            root = ET.fromstring(response.content)
+            # Find article links (adjust selectors based on site structure)
+            article_links = soup.find_all('a', href=True)
             
-            # RSS 2.0 format - items are in channel/item
-            for item in root.findall('.//item'):
-                title_elem = item.find('title')
-                link_elem = item.find('link')
+            for link in article_links:
+                href = link.get('href', '')
+                title = link.get_text(strip=True)
                 
-                if title_elem is not None and link_elem is not None:
-                    title = title_elem.text
-                    url = link_elem.text
+                # Filter for blog article links
+                if '/blog/' in href and title and len(title) > 15:
+                    # Make absolute URL
+                    if href.startswith('/'):
+                        absolute_url = f"https://www.docker.com{href}"
+                    elif href.startswith('http'):
+                        absolute_url = href
+                    else:
+                        continue
                     
-                    if title and url:
+                    # Avoid duplicates and main blog page
+                    if (not any(a['url'] == absolute_url for a in articles) and 
+                        absolute_url != self.URL):
                         articles.append({
-                            'url': url.strip(),
-                            'title': title.strip(),
-                            'source': 'Expo'
+                            'url': absolute_url,
+                            'title': title,
+                            'source': 'Docker'
                         })
             
-            print(f"✓ Found {len(articles)} articles from React Native blog")
+            print(f"✓ Found {len(articles)} articles from Docker blog")
             
             if not articles:
-                print("⚠ No articles found in RSS feed.")
+                print("⚠ No articles found. The page structure may have changed.")
             
             return articles
             
-        except ET.ParseError as e:
-            print(f"❌ Error parsing RSS feed: {str(e)}")
-            return []
         except Exception as e:
-            print(f"❌ Error crawling React Native blog: {str(e)}")
+            print(f"❌ Error crawling Docker blog: {str(e)}")
             return []
     
     def extract_content(self, url: str) -> str:

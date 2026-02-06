@@ -47,7 +47,7 @@ class Config:
     @property
     def custom_hashtags(self) -> str:
         """Custom hashtags to append to posts"""
-        default_tags = '#SoftwareEngineer #Developer #FullStackDeveloper #AWS #ReactNative #CloudComputing #MobileDev'
+        default_tags = '#SoftwareEngineer #Developer #FullStackDeveloper #AWS #Docker #CloudComputing #DevOps'
         return os.getenv('CUSTOM_HASHTAGS', default_tags)
     
     def validate(self):

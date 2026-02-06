@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import List, Dict
 
 from config import Config
-from crawlers import FullstackCrawler, ExpoCrawler, AWSCrawler
+from crawlers import FullstackCrawler, DockerCrawler, AWSCrawler
 from post_generator import PostGenerator
 
 
@@ -22,7 +22,7 @@ class LinkedInPostApp:
         self.config.validate()
         
         self.fullstack = FullstackCrawler()
-        self.expo = ExpoCrawler()
+        self.docker = DockerCrawler()
         self.aws = AWSCrawler()
         self.generator = PostGenerator(self.config.openai_api_key, self.config.custom_hashtags)
         self.log_messages = []  # Store log messages for meta.txt
@@ -42,7 +42,7 @@ class LinkedInPostApp:
         self.log(f"Started at: {start_time.strftime('%Y-%m-%d %H:%M:%S')}")
         self.log("\nCrawling three fixed blog sources:")
         self.log("  • Fullstack Labs Blog")
-        self.log("  • React Native Blog")
+        self.log("  • Docker Blog")
         self.log("  • AWS DevOps Blog")
         
         # Crawl all three blogs
@@ -56,13 +56,13 @@ class LinkedInPostApp:
         all_articles.extend(fullstack_articles)
         self.log(f"✓ Found {len(fullstack_articles)} articles from Fullstack")
         
-        # Crawl React Native
+        # Crawl Docker
         self.log("\n" + "=" * 70)
-        self.log("Crawling React Native Blog")
+        self.log("Crawling Docker Blog")
         self.log("=" * 70)
-        expo_articles = self.expo.crawl()
-        all_articles.extend(expo_articles)
-        self.log(f"✓ Found {len(expo_articles)} articles from React Native")
+        docker_articles = self.docker.crawl()
+        all_articles.extend(docker_articles)
+        self.log(f"✓ Found {len(docker_articles)} articles from Docker")
         
         # Crawl AWS
         self.log("\n" + "=" * 70)
@@ -138,8 +138,8 @@ class LinkedInPostApp:
                 # Use the appropriate crawler based on source
                 if article['source'] == 'Fullstack':
                     content = self.fullstack.extract_content(article['url'])
-                elif article['source'] == 'Expo':
-                    content = self.expo.extract_content(article['url'])
+                elif article['source'] == 'Docker':
+                    content = self.docker.extract_content(article['url'])
                 elif article['source'] == 'AWS DevOps':
                     content = self.aws.extract_content(article['url'])
             

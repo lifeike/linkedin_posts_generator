@@ -4,7 +4,7 @@ Automatically crawl three tech blogs and generate professional LinkedIn posts us
 
 ## Features
 
-✨ **Three Fixed Blog Sources** - Crawls Fullstack Labs, React Native, and AWS DevOps blogs  
+✨ **Three Fixed Blog Sources** - Crawls Fullstack Labs, Docker, and AWS DevOps blogs  
 🤖 **AI-Powered Posts** - Generate engaging LinkedIn posts using OpenAI GPT-3.5  
 📡 **RSS Feed Support** - Stable extraction using RSS feeds where available  
 🔒 **Secure** - API keys stored in `.env` file (not committed to git)
@@ -14,7 +14,7 @@ Automatically crawl three tech blogs and generate professional LinkedIn posts us
 The tool automatically crawls these three blogs:
 
 1. **Fullstack Labs** - https://www.fullstack.com/labs/resources/blog
-2. **React Native** - https://reactnative.dev/blog (via RSS feed)
+2. **Docker** - https://www.docker.com/blog/
 3. **AWS DevOps** - https://aws.amazon.com/blogs/devops/
 
 ## Quick Start
@@ -64,7 +64,7 @@ linkedin-post-generator/
 ├── crawlers/
 │   ├── __init__.py
 │   ├── fullstack_crawler.py    # Fullstack Labs crawler
-│   ├── expo_crawler.py          # React Native RSS crawler
+│   ├── docker_crawler.py        # Docker blog crawler
 │   └── aws_crawler.py           # AWS DevOps crawler
 ├── main.py                      # Main application entry point
 ├── config.py                    # Configuration management
@@ -123,7 +123,7 @@ Each post includes:
 
 Breakdown by source:
   • Fullstack: 12 posts
-  • Expo: 20 posts
+  • Docker: 20 posts
   • AWS DevOps: 13 posts
 
 Files created:
@@ -158,7 +158,7 @@ All dependencies are listed in `requirements.txt`:
 
 1. **Crawl Blogs** - Each crawler extracts articles from its specific blog
    - Fullstack: Parses HTML structure
-   - React Native: Uses RSS feed (most reliable)
+   - Docker: Parses HTML structure
    - AWS DevOps: Parses HTML structure
 
 2. **Generate Posts** - For each article:
