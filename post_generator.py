@@ -68,7 +68,7 @@ STRICT FORMAT REQUIREMENTS:
    2️⃣ Second takeaway  
    3️⃣ Third takeaway
 4. Add a blank line
-5. End with "Read more: [URL]"
+5. End with "Read more: {article['url']}" (use the ACTUAL URL provided above, not the placeholder [URL])
 6. Add a blank line
 7. Add 3-5 relevant hashtags (topic-specific, not role-based)
 
@@ -77,5 +77,7 @@ STYLE:
 - Each takeaway should be concise (1-2 lines max)
 - Use bullet emojis (1️⃣ 2️⃣ 3️⃣) for takeaways
 - Length: 150-250 words total
+
+IMPORTANT: Always use the actual article URL ({article['url']}) in the "Read more:" line, never use [URL] as a placeholder.
 
 Write the LinkedIn post following this exact structure:"""
