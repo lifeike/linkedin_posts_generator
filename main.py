@@ -165,28 +165,40 @@ class LinkedInPostApp:
         return results
     
     def save_results(self, results: List[Dict]):
-        """Save results to TXT file with easy copy-paste format"""
+        """Save results to TXT file grouped by source with easy copy-paste format"""
         output_file = self.config.output_file
         
         # Create output directory if it doesn't exist
         output_path = Path(output_file)
         output_path.parent.mkdir(parents=True, exist_ok=True)
         
-        # Save as TXT with clear separation
+        # Group results by source
+        grouped = {}
+        for result in results:
+            source = result['source']
+            if source not in grouped:
+                grouped[source] = []
+            grouped[source].append(result)
+        
+        # Save as TXT grouped by category
         with open(output_file, 'w', encoding='utf-8') as f:
-            for i, result in enumerate(results, 1):
+            for source in ['Fullstack', 'Docker', 'AWS DevOps']:
+                if source not in grouped:
+                    continue
+                
+                posts = grouped[source]
+                
+                # Category header
                 f.write(f"{'=' * 70}\n")
-                f.write(f"POST #{i}\n")
-                f.write(f"{'=' * 70}\n")
-                f.write(f"Source: {result['source']}\n")
-                f.write(f"Title: {result['article_title']}\n")
-                f.write(f"URL: {result['article_url']}\n")
-                f.write(f"Generated: {result['generated_at']}\n")
-                f.write(f"\n{'- ' * 35}\n")
-                f.write(f"LINKEDIN POST:\n")
-                f.write(f"{'- ' * 35}\n\n")
-                f.write(result['linkedin_post'])
-                f.write(f"\n\n")
+                f.write(f"{source.upper()} POSTS ({len(posts)})\n")
+                f.write(f"{'=' * 70}\n\n")
+                
+                # Write posts for this category
+                for result in posts:
+                    f.write(result['linkedin_post'])
+                    f.write(f"\n\n{'- ' * 35}\n\n")
+                
+                f.write("\n")
         
         self.log(f"\n✓ Saved {len(results)} posts to {output_file}")
     

@@ -60,13 +60,22 @@ class PostGenerator:
 Title: {article['title']}
 URL: {article['url']}{content_section}
 
-Requirements:
-- Start with an attention-grabbing hook (question, bold statement, or insight)
-- Highlight 2-3 key takeaways or insights
-- Professional yet conversational tone
-- Use 1-2 relevant emojis (use sparingly)
-- End with the article URL
-- Length: 150-250 words
-- Add 3-5 relevant hashtags at the end (topic-specific, not role-based)
+STRICT FORMAT REQUIREMENTS:
+1. Start with an attention-grabbing hook (1-2 sentences with an emoji)
+2. Add a blank line
+3. Write EXACTLY 3 key takeaways using this format:
+   1️⃣ First takeaway
+   2️⃣ Second takeaway  
+   3️⃣ Third takeaway
+4. Add a blank line
+5. End with "Read more: [URL]"
+6. Add a blank line
+7. Add 3-5 relevant hashtags (topic-specific, not role-based)
 
-Write the LinkedIn post:"""
+STYLE:
+- Professional yet conversational tone
+- Each takeaway should be concise (1-2 lines max)
+- Use bullet emojis (1️⃣ 2️⃣ 3️⃣) for takeaways
+- Length: 150-250 words total
+
+Write the LinkedIn post following this exact structure:"""
